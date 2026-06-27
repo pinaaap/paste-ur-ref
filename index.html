@@ -1553,8 +1553,8 @@
 <!-- API KEY MODAL -->
 <div class="modal-bg" id="key-modal">
   <div class="modal-box">
-    <div class="modal-title">API key de Anthropic</div>
-    <p class="modal-sub">La key se guarda solo en tu navegador (localStorage) y se envía directamente a Anthropic. Necesitas una key para usar el generador con IA.</p>
+    <div class="modal-title">API key de Anthropic (opcional)</div>
+    <p class="modal-sub">No necesitas key: la app ya funciona con el servidor. Si prefieres usar tu propia cuenta de Anthropic, pega aquí tu key — se guarda solo en tu navegador y se envía directamente a Anthropic.</p>
     <div class="field-wrap">
       <label class="field-label">Anthropic API key</label>
       <input type="text" id="key-input" placeholder="sk-ant-..." autocomplete="off" spellcheck="false">
@@ -1649,20 +1649,29 @@ function usarEjemplo() {
 
 async function callClaude(system, user) {
   const key = getKey();
-  if(!key) {
-    openKeyModal();
-    throw new Error('Configura tu API key primero.');
+  const body = JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:1500, system, messages:[{role:'user',content:user}] });
+
+  let res;
+  if (key && key.startsWith('sk-')) {
+    // Modo "trae tu propia key": llamada directa a Anthropic desde el navegador
+    res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key': key,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body
+    });
+  } else {
+    // Modo proxy: el servidor (Vercel) pone la key. El visitante no necesita la suya.
+    res = await fetch('/api/chat', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body
+    });
   }
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method:'POST',
-    headers:{
-      'Content-Type':'application/json',
-      'x-api-key': key,
-      'anthropic-version':'2023-06-01',
-      'anthropic-dangerous-direct-browser-access':'true'
-    },
-    body: JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:1500, system, messages:[{role:'user',content:user}] })
-  });
   if(!res.ok) {
     const e = await res.json().catch(()=>({}));
     throw new Error(e?.error?.message || `Error ${res.status}`);
@@ -2067,14 +2076,7 @@ async function fetchFromURL(url) {
     if (parsed.titulo || parsed.autor) return parsed;
   }
 
-  // 5. Fallback: usa Claude si hay API key disponible
-  const key = getKey();
-  if (!key) {
-    throw new Error(
-      'No se encontró un DOI en esta página. Configura tu API key para que la IA identifique la fuente, o completa los datos manualmente.'
-    );
-  }
-
+  // 5. Fallback: usa Claude (proxy del servidor o key personal) para identificar la fuente
   const raw = await callClaude(
     `Eres un asistente de citación APA 7. Dado un URL, extrae los metadatos bibliográficos que puedas identificar basándote en la URL y en tu conocimiento de esa publicación. Responde SOLO con JSON válido sin backticks:
 {"autor":"Apellido, N., & Apellido, N.","anio":"2021","titulo":"Título del artículo o página","pagina":"45-67","revista":"Nombre de la revista o vacío","volumen":"12(3) o vacío","editorial":"Editorial o vacío","url":"${url}"}
