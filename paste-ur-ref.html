@@ -1567,6 +1567,39 @@
   </div>
 </div>
 
+<!-- INTRO / ONBOARDING -->
+<div class="modal-bg" id="intro-modal">
+  <div class="modal-box" style="max-width:480px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+      <span style="font-size:26px">📚</span>
+      <div class="modal-title" style="margin-bottom:0">Bienvenido a Paste ur ref.</div>
+    </div>
+    <p class="modal-sub" style="margin-bottom:1rem">Tu árbitro para citas en APA 7 y lectura crítica de evidencia. Esto es lo que puedes hacer:</p>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:1rem">
+      <div style="display:flex;gap:10px;align-items:flex-start;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px">
+        <span style="font-size:18px;flex-shrink:0">✍️</span>
+        <div><span style="font-size:13px;font-weight:700;color:var(--text)">Citar</span><br><span style="font-size:12px;color:var(--text-muted);line-height:1.45">Pega un texto y genera la cita y la referencia APA 7 correctas, paso a paso.</span></div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px">
+        <span style="font-size:18px;flex-shrink:0">🔍</span>
+        <div><span style="font-size:13px;font-weight:700;color:var(--text)">Corregir</span><br><span style="font-size:12px;color:var(--text-muted);line-height:1.45">¿Ya escribiste una cita? Pégala y te digo qué arreglar según APA 7.</span></div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px">
+        <span style="font-size:18px;flex-shrink:0">🧪</span>
+        <div><span style="font-size:13px;font-weight:700;color:var(--text)">CASPe</span><br><span style="font-size:12px;color:var(--text-muted);line-height:1.45">Evalúa la calidad de un estudio con las plantillas oficiales de lectura crítica.</span></div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px">
+        <span style="font-size:18px;flex-shrink:0">📖</span>
+        <div><span style="font-size:13px;font-weight:700;color:var(--text)">Guía APA</span><br><span style="font-size:12px;color:var(--text-muted);line-height:1.45">Reglas, ejemplos y una checklist para revisar antes de entregar.</span></div>
+      </div>
+    </div>
+    <p style="font-size:12px;color:var(--text-muted);text-align:center">No necesitas cuenta ni API key — empieza directamente.</p>
+    <div class="modal-actions" style="margin-top:1rem">
+      <button class="btn-primary" onclick="cerrarIntro()" style="width:100%;justify-content:center">Empezar ahora →</button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ─── API KEY ─── */
 let _keyCache = '';
@@ -3370,6 +3403,21 @@ function toggleRule(card) {
   if(!was) card.classList.add('expanded');
 }
 
+/* ─── ONBOARDING ─── */
+function cerrarIntro() {
+  document.getElementById('intro-modal').classList.remove('open');
+  try { localStorage.setItem('apa7_seen_intro', '1'); } catch(e) {}
+}
+function maybeShowIntro() {
+  let seen = '';
+  try { seen = localStorage.getItem('apa7_seen_intro') || ''; } catch(e) {}
+  if(!seen) document.getElementById('intro-modal').classList.add('open');
+}
+// Cerrar al pulsar fuera del recuadro
+document.getElementById('intro-modal').addEventListener('click', function(e) {
+  if(e.target === this) cerrarIntro();
+});
+
 /* ─── INIT ─── */
 const savedKey = getKey();
 if(savedKey && savedKey.startsWith('sk-')) {
@@ -3379,6 +3427,7 @@ if(savedKey && savedKey.startsWith('sk-')) {
 }
 renderEval();
 renderGuia();
+maybeShowIntro();
 </script>
 </body>
 </html>
