@@ -176,12 +176,13 @@
     color: rgba(250,250,248,0.45);
     letter-spacing: 0.02em;
   }
-  .nav-links { display: flex; gap: 4px; }
+  .nav-links { display: flex; gap: 2px; }
   .nav-link {
     background: transparent;
     border: none;
-    padding: 6px 12px;
+    padding: 6px 10px;
     font-size: 13px;
+    white-space: nowrap;
     color: rgba(250,250,248,0.6);
     cursor: pointer;
     border-radius: 6px;
@@ -833,6 +834,10 @@
   }
   .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 1.25rem; }
 
+  @media (max-width: 980px) {
+    .nav-brand-tag { display: none; }
+    nav { padding: 0 1.25rem; }
+  }
   @media (max-width: 600px) {
     nav { padding: 0 1rem; }
     .nav-brand-tag { display: none; }
@@ -854,11 +859,12 @@
     <button class="nav-link active" id="nl-home" onclick="showPage('home')">Inicio</button>
     <button class="nav-link" id="nl-citar" onclick="showPage('citar')">Citar</button>
     <button class="nav-link" id="nl-corregir" onclick="showPage('corregir')">Corregir</button>
+    <button class="nav-link" id="nl-parafrasear" onclick="showPage('parafrasear')">Parafrasear</button>
     <button class="nav-link" id="nl-evaluar" onclick="showPage('evaluar')">Evaluar</button>
     <button class="nav-link" id="nl-caspe" onclick="showPage('caspe')">CASPe</button>
     <button class="nav-link" id="nl-guia" onclick="showPage('guia')">Guía APA</button>
     <button class="nav-link" id="nl-theme" onclick="toggleTheme()" title="Cambiar tema" style="font-size:15px;padding:6px 10px">🌙</button>
-    <button class="nav-link" id="nl-key" onclick="openKeyModal()">⚙ API key</button>
+    <button class="nav-link" id="nl-key" onclick="openKeyModal()" title="API key (opcional)">⚙</button>
   </div>
 </nav>
 
@@ -1175,6 +1181,37 @@
     <div id="load-corr" style="display:none"><div class="loading-row"><div class="spinner"></div>El árbitro está revisando tu cita contra las reglas APA 7…</div></div>
 
     <div id="corr-resultado" style="display:none;margin-top:1.5rem"></div>
+  </div>
+
+  <!-- PARAFRASEAR -->
+  <div class="page" id="page-parafrasear">
+    <div style="margin-bottom:1.5rem">
+      <h2 style="font-size:22px;font-weight:700;color:var(--brand);letter-spacing:-0.02em;margin-bottom:4px">Parafrasea tu texto</h2>
+      <p style="font-size:14px;color:var(--text-muted)">Pega un texto y el árbitro lo reescribe como una paráfrasis correcta — cambiando estructura y vocabulario, no solo sinónimos — y te explica qué cambió para que aprendas la técnica.</p>
+    </div>
+
+    <div class="card">
+      <label class="field-label">Texto original</label>
+      <textarea id="paraf-input" rows="5" placeholder="Pega aquí la frase o párrafo que quieres parafrasear…" style="width:100%"></textarea>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:1rem">
+        <div>
+          <label class="field-label">Autor <span style="color:var(--text-muted);font-weight:400">(para la cita)</span></label>
+          <input type="text" id="paraf-autor" placeholder="García" autocomplete="off">
+        </div>
+        <div>
+          <label class="field-label">Año <span style="color:var(--text-muted);font-weight:400">(opcional)</span></label>
+          <input type="text" id="paraf-anio" placeholder="2020" autocomplete="off">
+        </div>
+      </div>
+
+      <div id="err-paraf" style="margin-top:8px"></div>
+      <button class="btn-primary" id="btn-parafrasear" onclick="parafrasearTexto()" style="margin-top:1rem">✍️ Parafrasear</button>
+    </div>
+
+    <div id="load-paraf" style="display:none"><div class="loading-row"><div class="spinner"></div>El árbitro está reescribiendo el texto con tus palabras…</div></div>
+
+    <div id="paraf-resultado" style="display:none;margin-top:1.5rem"></div>
   </div>
 
   <!-- EVALUAR -->
@@ -1623,7 +1660,7 @@ function saveKey() {
   try { if(v) localStorage.setItem('apa7_key', v); } catch(e) {}
   const btn = document.getElementById('nl-key');
   btn.classList.toggle('key-set', !!v && v.startsWith('sk-'));
-  btn.textContent = (v && v.startsWith('sk-')) ? '✓ API key' : '⚙ API key';
+  btn.textContent = (v && v.startsWith('sk-')) ? '✓' : '⚙';
   closeKeyModal();
 }
 
@@ -2465,6 +2502,82 @@ function renderCorreccion(r) {
     : '';
 
   cont.innerHTML = panel + corregida;
+  cont.style.display = 'block';
+}
+
+/* ─── ASISTENTE DE PARÁFRASIS ─── */
+async function parafrasearTexto() {
+  const texto = document.getElementById('paraf-input').value.trim();
+  const autor = document.getElementById('paraf-autor').value.trim();
+  const anio  = document.getElementById('paraf-anio').value.trim();
+  const errEl = document.getElementById('err-paraf');
+  errEl.innerHTML = '';
+  if(!texto) { errEl.innerHTML = '<div class="error-inline">Pega un texto para parafrasear.</div>'; return; }
+  if(texto.split(/\s+/).length < 5) { errEl.innerHTML = '<div class="error-inline">El texto es muy corto para parafrasear con sentido.</div>'; return; }
+
+  const btn = document.getElementById('btn-parafrasear');
+  btn.disabled = true;
+  document.getElementById('load-paraf').style.display = 'block';
+  document.getElementById('paraf-resultado').style.display = 'none';
+
+  const citaInfo = autor
+    ? `\nDatos para la cita: autor "${autor}"${anio?`, año "${anio}"`:' (sin año, usa s. f.)'}. Incluye la cita en el texto al final de la paráfrasis con formato APA 7 (Autor, año).`
+    : '\nNo hay datos de autor: deja cita_en_texto como "(Autor, año)" para que el estudiante la complete.';
+
+  try {
+    const raw = await callClaude(
+      'Eres experto en redacción académica y APA 7 para estudiantes de ciencias de la salud. Parafraseas de forma genuina (cambias estructura y vocabulario, NO solo sinónimos) manteniendo el significado. Responde SOLO con JSON válido sin backticks.',
+      `Parafrasea este texto de forma correcta para un trabajo académico en español.
+
+Texto original:
+"${texto}"${citaInfo}
+
+REGLAS:
+- Cambia la ESTRUCTURA de las oraciones y el vocabulario, conservando el significado exacto.
+- NO hagas patchwriting (no cambies solo algunas palabras por sinónimos manteniendo el orden).
+- Mantén el registro académico y la precisión técnica (no inventes ni omitas datos).
+- La paráfrasis debe poder integrarse en un párrafo, terminando con la cita en el texto.
+
+JSON exacto requerido:
+{"parafrasis":"el texto parafraseado, terminando con la cita (Autor, año)","cita_en_texto":"(Autor, año)","cambios":[{"tecnica":"nombre de la técnica aplicada","detalle":"explicación breve de qué cambiaste y por qué, con ejemplo concreto"}]}`
+    );
+    const r = JSON.parse(raw.replace(/```json|```/g,'').trim());
+    renderParafrasis(r);
+  } catch(e) {
+    document.getElementById('load-paraf').style.display = 'none';
+    errEl.innerHTML = `<div class="error-inline">${e.message}</div>`;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function renderParafrasis(r) {
+  document.getElementById('load-paraf').style.display = 'none';
+  const cont = document.getElementById('paraf-resultado');
+  const cambios = Array.isArray(r.cambios) ? r.cambios : [];
+
+  cont.innerHTML = `
+    <div style="margin-bottom:1.25rem">
+      <p class="slabel">Tu paráfrasis — lista para integrar</p>
+      <div class="cite-box">
+        <p class="cite-ref" id="paraf-out" style="font-family:Georgia,serif">${r.parafrasis||''}</p>
+        <button class="btn-copy" onclick="copiar('paraf-out',this)" style="margin-top:10px">📋 Copiar</button>
+      </div>
+    </div>
+    ${cambios.length?`
+    <div style="margin-bottom:1.25rem">
+      <p class="slabel">Qué cambié — y por qué</p>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        ${cambios.map(c=>`<div style="display:flex;gap:8px;align-items:flex-start;padding:9px 12px;border-radius:8px;background:var(--surface);border:1px solid var(--border)">
+          <span style="font-size:13px;flex-shrink:0">🔧</span>
+          <div style="font-size:12.5px;line-height:1.55;color:var(--text)"><strong>${c.tecnica||''}</strong>${c.detalle?`<br><span style="color:var(--text-mid)">${c.detalle}</span>`:''}</div>
+        </div>`).join('')}
+      </div>
+    </div>`:''}
+    <div style="display:flex;gap:8px;align-items:flex-start;padding:10px 12px;border-radius:8px;background:var(--amber-bg);border:1px solid var(--amber-border)">
+      <span style="font-size:13px;flex-shrink:0">⚠️</span>
+      <span style="font-size:12.5px;line-height:1.55;color:var(--text)"><strong>Léela y asegúrate de entenderla.</strong> Una paráfrasis refleja tu comprensión: comprueba que dice lo mismo que el original y que la entiendes antes de usarla. No la copies sin más.</span>
+    </div>`;
   cont.style.display = 'block';
 }
 
@@ -3427,7 +3540,7 @@ const savedKey = getKey();
 if(savedKey && savedKey.startsWith('sk-')) {
   const btn = document.getElementById('nl-key');
   btn.classList.add('key-set');
-  btn.textContent = '✓ API key';
+  btn.textContent = '✓';
 }
 renderEval();
 renderGuia();
