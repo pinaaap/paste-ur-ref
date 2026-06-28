@@ -3208,7 +3208,7 @@ const EVALS = {
     nodes: {
       start: {q:'¿Necesitas las palabras exactas del autor?', hint:'Por ejemplo: una definición técnica, una frase que no puede reescribirse sin perder precisión.', opts:[{l:'Sí, las palabras exactas importan',n:'palabras'},{l:'No, lo que importa es la idea',n:'res_parafrasis'}]},
       palabras: {q:'¿Cuántas palabras tiene el fragmento?', opts:[{l:'Menos de 40 palabras',n:'res_textual_corta'},{l:'40 palabras o más',n:'res_textual_larga'}]},
-      res_parafrasis: {res:{tipo:'green',titulo:'Usa paráfrasis',desc:'Reescribe la idea con tus propias palabras y agrega la cita al final. No necesitas número de página, solo autor y año. Es la forma preferida en APA porque demuestra comprensión real.',ej:`<div style="font-family:inherit;font-size:12px;margin-bottom:10px">
+      res_parafrasis: {res:{tipo:'green',titulo:'Usa paráfrasis',desc:'Reescribe la idea con tus propias palabras y agrega la cita al final. El número de página es opcional (recomendada en textos largos); basta con autor y año. Es la forma preferida en APA porque demuestra comprensión real.',ej:`<div style="font-family:inherit;font-size:12px;margin-bottom:10px">
   <p style="font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:8px">Cómo hacerlo en 3 pasos</p>
   <div style="display:flex;flex-direction:column;gap:6px">
     <div style="display:flex;gap:8px;align-items:flex-start">
@@ -3217,11 +3217,11 @@ const EVALS = {
     </div>
     <div style="display:flex;gap:8px;align-items:flex-start">
       <span style="flex-shrink:0;width:20px;height:20px;border-radius:50%;background:var(--green-border);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800">2</span>
-      <p style="margin:0;color:var(--text);line-height:1.5"><strong>Cambia estructura y vocabulario.</strong> No reordenes las mismas palabras — usa sinónimos y reformula la oración desde cero.</p>
+      <p style="margin:0;color:var(--text);line-height:1.5"><strong>Reescríbelo con tu propia estructura.</strong> Exprésalo como se lo contarías a un compañero. Cambiar solo algunas palabras por sinónimos no es parafrasear — sigue siendo plagio.</p>
     </div>
     <div style="display:flex;gap:8px;align-items:flex-start">
       <span style="flex-shrink:0;width:20px;height:20px;border-radius:50%;background:var(--green-border);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800">3</span>
-      <p style="margin:0;color:var(--text);line-height:1.5"><strong>Cita al final del enunciado.</strong> Agrega (Autor, año) antes del punto. La página es opcional.</p>
+      <p style="margin:0;color:var(--text);line-height:1.5"><strong>Cita al final del enunciado.</strong> Agrega (Autor, año) antes del punto. La página es opcional (recomendada en textos largos).</p>
     </div>
   </div>
 </div>
@@ -3336,9 +3336,13 @@ const GUIA_CITAS = {
       <p class="slabel" style="margin-bottom:6px">Forma narrativa</p>
       <p style="font-family:Georgia,serif;font-size:14px;line-height:1.8"><strong style="color:var(--blue)">García (2020)</strong> sostiene que la motivación interna es el factor más relevante en el aprendizaje digital.</p>
     </div>
-    <div style="background:var(--red-bg);border:0.5px solid var(--red-border);border-radius:var(--radius);padding:1rem">
+    <div style="background:var(--red-bg);border:0.5px solid var(--red-border);border-radius:var(--radius);padding:1rem;margin-bottom:10px">
       <p class="slabel" style="margin-bottom:6px;color:var(--red)">Errores frecuentes</p>
-      <p style="font-size:13px;color:var(--text-mid);line-height:1.6">❌ Agregar número de página en paráfrasis — no es necesario<br>❌ Poner comillas — si hay comillas, es cita textual, no paráfrasis</p>
+      <p style="font-size:13px;color:var(--text-mid);line-height:1.6">❌ Poner comillas — si hay comillas, es cita textual, no paráfrasis<br>❌ Cambiar solo algunas palabras por sinónimos manteniendo la estructura — eso es <em>patchwriting</em>, y sigue siendo plagio</p>
+    </div>
+    <div style="background:var(--blue-bg);border:0.5px solid var(--blue-border);border-radius:var(--radius);padding:1rem">
+      <p class="slabel" style="margin-bottom:6px;color:var(--blue)">Sobre el número de página</p>
+      <p style="font-size:13px;color:var(--text-mid);line-height:1.6">ℹ️ Es <strong>opcional</strong> (recomendada en textos largos). Añádela solo si ayuda al lector a ubicar la idea — no es un error incluirla ni omitirla.</p>
     </div>`,
   textual: `
     <div style="background:var(--surface);border-radius:var(--radius);padding:1rem;margin-bottom:10px">
