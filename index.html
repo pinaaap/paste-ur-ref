@@ -939,7 +939,7 @@
           <p style="font-size:11px;color:var(--text-muted);margin-bottom:8px">40 palabras o más. En bloque con sangría, sin comillas.</p>
           <div style="background:var(--amber-bg);border-radius:6px;padding:8px;font-family:Georgia,serif;font-size:11px;color:var(--text);line-height:1.6">
             García (2020) sostiene que:<br>
-            <span style="display:block;padding-left:1.27cm;margin-top:4px">La motivación intrínseca del estudiante determina su capacidad para autorregular el proceso de aprendizaje en entornos digitales. (p. 45)</span>
+            <span style="display:block;padding-left:1.27cm;margin-top:4px">La motivación intrínseca del estudiante determina en gran medida su capacidad para autorregular el proceso de aprendizaje en entornos digitales, ya que sin un interés genuino resulta difícil sostener la atención, organizar las tareas y evaluar de forma crítica los propios avances a lo largo del curso. (p. 45)</span>
           </div>
           <p style="font-size:10px;color:var(--text-muted);margin-top:6px">⚠️ Punto <strong>antes</strong> del paréntesis</p>
         </div>
@@ -2061,7 +2061,7 @@ async function buscarDatos() {
 
     const filled = [meta.autor, meta.anio, meta.titulo].filter(Boolean);
     document.getElementById('lookup-found-text').innerHTML =
-      `Datos encontrados: <strong>${filled.join(' · ')}</strong>${meta.pagina ? ` · pp. ${meta.pagina}` : ''}`;
+      `Datos encontrados: <strong>${filled.join(' · ')}</strong>${meta.pagina ? ` · ${/[-–—]/.test(meta.pagina) ? 'pp.' : 'p.'} ${meta.pagina}` : ''}`;
     foundEl.style.display = 'block';
 
   } catch(e) {
@@ -3351,7 +3351,7 @@ const EVALS = {
   </div>
 </div>`}},
       res_textual_corta: {res:{tipo:'blue',titulo:'Cita textual corta — entre comillas',desc:'Menos de 40 palabras: copia el texto exacto entre comillas dobles " " dentro del párrafo. Incluye autor, año y número de página.',ej:'"El aprendizaje digital exige una motivación sostenida y consciente" (García, 2020, p. 45).'}},
-      res_textual_larga: {res:{tipo:'amber',titulo:'Cita en bloque — sin comillas, con sangría',desc:'40 palabras o más: el texto va en párrafo aparte con sangría de 1.27 cm, sin comillas. El punto va ANTES del paréntesis de página — al revés que en la cita corta.',ej:'García (2020) describe el fenómeno:\n<span style="display:block;padding-left:1.27cm;margin-top:4px">El aprendizaje digital exige una motivación sostenida que no depende de factores externos sino de la capacidad del estudiante para autorregular su proceso. Esta autorregulación implica planificación, monitoreo y evaluación crítica de cada etapa. (p. 45)</span>'}},
+      res_textual_larga: {res:{tipo:'amber',titulo:'Cita en bloque — sin comillas, con sangría',desc:'40 palabras o más: el texto va en párrafo aparte con sangría de 1.27 cm, sin comillas. El punto va ANTES del paréntesis de página — al revés que en la cita corta.',ej:'García (2020) describe el fenómeno:\n<span style="display:block;padding-left:1.27cm;margin-top:4px">El aprendizaje digital exige una motivación sostenida que no depende de factores externos, sino de la capacidad del estudiante para autorregular su proceso. Esta autorregulación implica planificación, monitoreo y evaluación crítica de cada etapa, así como la disciplina para mantener el esfuerzo incluso cuando los contenidos resultan difíciles o poco estimulantes. (p. 45)</span>'}},
     }, start:'start'
   },
   plagio: {
@@ -3475,7 +3475,7 @@ const GUIA_CITAS = {
       <p class="slabel" style="margin-bottom:6px">Formato en bloque</p>
       <p style="font-family:Georgia,serif;font-size:14px;line-height:1.8">García (2020) describe el fenómeno de esta manera:</p>
       <div style="margin:10px 0 10px 2rem;padding-left:1rem;border-left:3px solid var(--border-strong);font-family:Georgia,serif;font-size:13px;line-height:1.8;color:var(--text)">
-        El aprendizaje digital exige una motivación sostenida que no depende de factores externos sino de la capacidad del estudiante para autorregular su proceso de aprendizaje. Esta autorregulación implica planificación, monitoreo y evaluación crítica. <strong style="color:var(--blue)">(p. 45)</strong>
+        El aprendizaje digital exige una motivación sostenida que no depende de factores externos, sino de la capacidad del estudiante para autorregular su propio proceso. Esta autorregulación implica planificar las metas, monitorear el avance y evaluar de manera crítica cada etapa, habilidades que no siempre se enseñan de forma explícita en el aula. <strong style="color:var(--blue)">(p. 45)</strong>
       </div>
     </div>
     <div style="background:var(--amber-bg);border:0.5px solid var(--amber-border);border-radius:var(--radius);padding:1rem">
