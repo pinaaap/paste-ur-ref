@@ -37,7 +37,7 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: model || 'claude-sonnet-4-6',
-        max_tokens: Math.min(Number(max_tokens) || 1500, 2000),
+        max_tokens: Math.min(Number(max_tokens) || 1500, 8192),
         system: system || '',
         messages
       })

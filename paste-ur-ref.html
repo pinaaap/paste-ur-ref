@@ -1717,9 +1717,9 @@ function usarEjemplo() {
   document.getElementById('texto-raw').value = `La motivación en contextos educativos ha sido ampliamente estudiada desde múltiples perspectivas teóricas. Desde la teoría de la autodeterminación, Deci y Ryan (1985) distinguen entre motivación intrínseca y extrínseca, argumentando que la primera proviene del interior del individuo y está impulsada por el interés o el disfrute de la tarea en sí misma, más que por presiones externas o recompensas materiales. Este tipo de motivación ha sido asociada consistentemente con un aprendizaje más profundo, mayor creatividad y mejor bienestar psicológico en estudiantes de todos los niveles. Por otro lado, la motivación extrínseca, aunque útil en ciertos contextos, tiende a generar comportamientos instrumentales que desaparecen cuando se retira el incentivo externo.`;
 }
 
-async function callClaude(system, user) {
+async function callClaude(system, user, maxTokens) {
   const key = getKey();
-  const body = JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:1500, system, messages:[{role:'user',content:user}] });
+  const body = JSON.stringify({ model:'claude-sonnet-4-6', max_tokens: maxTokens || 1500, system, messages:[{role:'user',content:user}] });
 
   let res;
   if (key && key.startsWith('sk-')) {
@@ -1750,6 +1750,16 @@ async function callClaude(system, user) {
   return data.content.map(i=>i.text||'').join('');
 }
 
+// Parsea el JSON del modelo de forma tolerante: quita backticks y texto
+// alrededor, quedándose con el bloque {…} para evitar errores por prosa extra.
+function parseModelJSON(raw) {
+  let s = (raw || '').replace(/```json|```/g, '').trim();
+  const first = s.indexOf('{');
+  const last = s.lastIndexOf('}');
+  if (first !== -1 && last !== -1 && last > first) s = s.slice(first, last + 1);
+  return JSON.parse(s);
+}
+
 async function analizarTexto() {
   const texto = document.getElementById('texto-raw').value.trim();
   const errEl = document.getElementById('err1');
@@ -1773,15 +1783,19 @@ REGLAS:
 - Para parafrasis y textual_larga: frases_narrativas debe ser []
 - NO incluyas referencias bibliográficas que ya estén en el texto (ej: "(García, 2020)")
 - Marca recomendado:true solo en el fragmento más útil académicamente`,
-      'Analiza:\n\n'+texto
+      'Analiza:\n\n'+texto,
+      4000
     );
-    const json = JSON.parse(raw.replace(/```json|```/g,'').trim());
+    const json = parseModelJSON(raw);
     st.fragmentos = json.fragmentos;
     st.tipoFuente = json.tipo_fuente;
     renderFrags(json.fragmentos);
   } catch(e) {
     document.getElementById('load1').style.display='none';
-    errEl.innerHTML = `<div class="error-inline">${e.message}</div>`;
+    const msg = /JSON|Unexpected|Expected|position/i.test(e.message)
+      ? 'La IA devolvió una respuesta incompleta. Vuelve a intentarlo, o pega un texto un poco más corto.'
+      : e.message;
+    errEl.innerHTML = `<div class="error-inline">${msg}</div>`;
   } finally {
     btn.disabled = false;
   }
