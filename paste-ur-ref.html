@@ -3372,10 +3372,10 @@ const EVALS = {
       res_articulo: {res:{tipo:'blue',titulo:'Artículo de revista académica',desc:'Autor, A. (Año). Título del artículo. Nombre de la Revista, volumen(número), pp–pp. https://doi.org/xxxxx',ej:'López, M. (2022). Aprendizaje activo en aulas híbridas. Revista de Pedagogía, 14(2), 45–67. https://doi.org/10.xxxx/xxxxx'}},
       res_libro: {res:{tipo:'blue',titulo:'Libro completo',desc:'Autor, A. (Año). Título del libro en cursiva (Edición si aplica). Editorial.',ej:'García, J. (2020). Metodología de la investigación (3ª ed.). Fondo de Cultura Económica.'}},
       res_capitulo: {res:{tipo:'blue',titulo:'Capítulo de libro editado',desc:'Autor del cap., A. (Año). Título del capítulo. En N. Editor (Ed.), Título del libro en cursiva (pp. XX–XX). Editorial.',ej:'Ramírez, C. (2019). Pensamiento crítico en la universidad. En M. Torres (Ed.), Pedagogía contemporánea (pp. 45–72). Universitaria.'}},
-      res_web: {res:{tipo:'blue',titulo:'Página o sitio web',desc:'Autor. (Año, día de mes). Título en cursiva. Nombre del sitio. URL — sin "Recuperado de", sin punto al final.',ej:'OMS. (2023, 10 de abril). Salud mental en adolescentes. Organización Mundial de la Salud. https://www.who.int/...'}},
-      res_tesis: {res:{tipo:'blue',titulo:'Tesis o disertación',desc:'Autor, A. (Año). Título en cursiva [Tipo de tesis]. Institución. URL o repositorio.',ej:'Fernández, S. (2021). Impacto del aprendizaje híbrido [Tesis de maestría]. Universidad de Chile. https://repositorio.uchile.cl/...'}},
+      res_web: {res:{tipo:'blue',titulo:'Página o sitio web',desc:'Autor. (Año, día de mes). Título en cursiva. Nombre del sitio (solo si es distinto del autor). URL — sin "Recuperado de", sin punto al final.',ej:'Organización Mundial de la Salud. (2023, 10 de abril). Salud mental en adolescentes. https://www.who.int/...\n\n(El autor y el sitio son el mismo ente, así que el nombre del sitio se omite para no repetirlo.)'}},
+      res_tesis: {res:{tipo:'blue',titulo:'Tesis o disertación',desc:'Autor, A. (Año). Título en cursiva [Tipo de tesis, Institución]. Nombre del repositorio. URL.\n\nLa institución va DENTRO del corchete cuando la tesis está en un repositorio.',ej:'Fernández, S. (2021). Impacto del aprendizaje híbrido [Tesis de maestría, Universidad de Chile]. Repositorio Académico UCH. https://repositorio.uchile.cl/...'}},
       res_video: {res:{tipo:'blue',titulo:'Video en línea',desc:'Autor o Canal. (Año, día de mes). Título del video en cursiva [Video]. Plataforma. URL',ej:'TED. (2023, 15 de marzo). Cómo aprender más rápido [Video]. YouTube. https://youtu.be/...'}},
-      res_informe: {res:{tipo:'blue',titulo:'Informe institucional',desc:'Organización. (Año). Título del informe en cursiva (N.º de informe si tiene). URL.',ej:'CEPAL. (2022). Panorama social de América Latina 2022. Naciones Unidas. https://cepal.org/...'}},
+      res_informe: {res:{tipo:'blue',titulo:'Informe institucional',desc:'Organización. (Año). Título del informe en cursiva (N.º de informe si tiene). Editorial (solo si es distinta del autor). URL — sin punto al final.',ej:'CEPAL. (2022). Panorama social de América Latina 2022. Naciones Unidas. https://cepal.org/...'}},
     }, start:'start'
   },
   fuente: {
@@ -3490,7 +3490,7 @@ const RULES = [
   {icon:'🔗',title:'DOI y URLs',desc:'Siempre usa el DOI cuando esté disponible. Las URLs no llevan punto final. Ya no se escribe "Recuperado de".',ex:'✓ https://doi.org/10.1037/a0021822\n\n❌ Recuperado de https://...\n✓ https://...'},
   {icon:'↵',title:'Sangría francesa',desc:'Primera línea al margen izquierdo, las siguientes con sangría de 1.27 cm.',ex:'García, M. (2020). Título muy largo del\n    libro que ocupa varias líneas. Editorial.'},
   {icon:'💬',title:'et al. en el texto',desc:'Con 3 o más autores se usa et al. desde la PRIMERA cita. Cambio clave respecto a APA 6.',ex:'1-2 autores: (García & López, 2020)\n3 o más: (García et al., 2020)\n\nEn APA 6 era desde la 3ª cita.'},
-  {icon:'🔤',title:'Orden de referencias',desc:'Alfabéticamente por apellido. Misma autor: orden cronológico.',ex:'García, M. (2018).\nGarcía, M. (2021).\nLópez, A. (2020).'},
+  {icon:'🔤',title:'Orden de referencias',desc:'Alfabéticamente por apellido. Mismo autor: orden cronológico.',ex:'García, M. (2018).\nGarcía, M. (2021).\nLópez, A. (2020).'},
   {icon:'🏛️',title:'Autores institucionales',desc:'Nombre completo de la institución. Puede abreviarse desde la segunda cita en el texto.',ex:'OMS. (2023).\n\nEn texto: (Organización Mundial de la Salud [OMS], 2023)\nLuego: (OMS, 2023).'},
 ];
 
