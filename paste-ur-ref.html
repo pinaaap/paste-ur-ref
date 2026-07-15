@@ -262,6 +262,23 @@
   }
   .hero-cta:hover { opacity: 0.85; }
   .hero-cta-accent { color: var(--accent); }
+  .hero-ctas { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .hero-cta-2 {
+    background: transparent;
+    color: var(--brand);
+    border: 1.5px solid var(--border-strong);
+    border-radius: var(--radius);
+    padding: 13px 24px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .hero-cta-2:hover { border-color: var(--brand); background: var(--surface); }
 
   .features-row {
     display: grid;
@@ -888,10 +905,15 @@
     <div class="hero">
       <div class="hero-whistle">🟡 APA 7ª edición</div>
       <h1 class="hero-title">Tu <span>referee</span><br>para citas en APA</h1>
-      <p class="hero-sub">Pega el texto que encontraste. La IA identifica los mejores fragmentos para citar, te guía paso a paso y genera la referencia correcta.</p>
-      <button class="hero-cta" onclick="showPage('citar')">
-        Empezar a citar <span class="hero-cta-accent">→</span>
-      </button>
+      <p class="hero-sub">Pega el texto que encontraste. La IA identifica los mejores fragmentos, te guía paso a paso y genera la cita — o reescribe un párrafo como paráfrasis correcta, sin plagio.</p>
+      <div class="hero-ctas">
+        <button class="hero-cta" onclick="showPage('citar')">
+          Citar un texto <span class="hero-cta-accent">→</span>
+        </button>
+        <button class="hero-cta-2" onclick="showPage('parafrasear')">
+          ✍️ Parafrasear sin plagiar
+        </button>
+      </div>
 
       <svg width="140" height="90" viewBox="0 0 140 90" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin:2rem auto 1.5rem;display:block;opacity:.55">
         <!-- Página izquierda -->
@@ -917,18 +939,18 @@
       <div class="features-row">
         <div class="feature-card" onclick="showPage('citar')">
           <div class="feature-icon">✂️</div>
-          <div class="feature-title">Elige qué citar</div>
-          <div class="feature-desc">La IA analiza tu texto y recomienda los fragmentos más citables. Tú decides cuál usar.</div>
+          <div class="feature-title">Genera tu cita →</div>
+          <div class="feature-desc">Pega un texto y la IA te entrega la cita en el texto y la referencia APA 7 completas, paso a paso.</div>
         </div>
-        <div class="feature-card" onclick="showPage('evaluar')">
-          <div class="feature-icon">🏴</div>
-          <div class="feature-title">Evalúa tus fuentes</div>
-          <div class="feature-desc">¿Es plagio? ¿Textual o paráfrasis? ¿Qué tipo de fuente? El árbitro te guía.</div>
+        <div class="feature-card" onclick="showPage('parafrasear')">
+          <div class="feature-icon">✍️</div>
+          <div class="feature-title">Parafrasea sin plagiar →</div>
+          <div class="feature-desc">Reescribe un párrafo con tus propias palabras — con la técnica correcta y su cita — evitando el plagio.</div>
         </div>
-        <div class="feature-card" onclick="showPage('guia')">
-          <div class="feature-icon">📖</div>
-          <div class="feature-title">Guía APA completa</div>
-          <div class="feature-desc">Reglas interactivas, DOI explicado, cita en texto, et al., y más.</div>
+        <div class="feature-card" onclick="showPage('corregir')">
+          <div class="feature-icon">🔍</div>
+          <div class="feature-title">Corrige lo que ya escribiste →</div>
+          <div class="feature-desc">¿Ya tienes una cita? Pégala y te digo qué está mal según APA 7 y cómo arreglarla.</div>
         </div>
       </div>
     </div>
