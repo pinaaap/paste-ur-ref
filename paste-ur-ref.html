@@ -1251,7 +1251,10 @@
           <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted)">Historial de citas</p>
           <p style="font-size:12px;color:var(--text-muted);margin-top:2px">Las últimas 30 referencias generadas en este navegador</p>
         </div>
-        <button id="hist-clear-btn" onclick="limpiarHistorial()" style="display:none;background:none;border:1px solid var(--border);border-radius:var(--radius);padding:5px 12px;font-size:12px;color:var(--text-muted);cursor:pointer;font-family:inherit">Borrar todo</button>
+        <div style="display:flex;gap:8px;align-items:center;flex-shrink:0">
+          <button id="hist-export-btn" onclick="exportarBibliografia()" class="btn-primary" style="display:none;font-size:12px;padding:6px 14px">📄 Exportar bibliografía</button>
+          <button id="hist-clear-btn" onclick="limpiarHistorial()" style="display:none;background:none;border:1px solid var(--border);border-radius:var(--radius);padding:5px 12px;font-size:12px;color:var(--text-muted);cursor:pointer;font-family:inherit">Borrar todo</button>
+        </div>
       </div>
       <div id="historial-list"></div>
     </div>
@@ -1735,6 +1738,24 @@
     <p style="font-size:12px;color:var(--text-muted);text-align:center">No necesitas cuenta ni API key — empieza directamente.</p>
     <div class="modal-actions" style="margin-top:1rem">
       <button class="btn-primary" onclick="cerrarIntro()" style="width:100%;justify-content:center">Empezar ahora →</button>
+    </div>
+  </div>
+</div>
+
+<!-- BIBLIOGRAFÍA -->
+<div class="modal-bg" id="biblio-modal">
+  <div class="modal-box" style="max-width:660px">
+    <div class="modal-title">Tu lista de referencias</div>
+    <p class="modal-sub" id="biblio-sub" style="margin-bottom:1rem"></p>
+    <div id="biblio-list" style="max-height:320px;overflow-y:auto;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem"></div>
+    <div style="display:flex;gap:8px;align-items:flex-start;padding:9px 12px;border-radius:8px;background:var(--blue-bg);border:1px solid var(--blue-border);margin-top:10px">
+      <span style="font-size:13px;flex-shrink:0">💡</span>
+      <span style="font-size:12px;line-height:1.5;color:var(--text)">Pégalas bajo el título <strong>Referencias</strong> y aplica <strong>sangría francesa</strong> de 1.27 cm en Word (Formato → Párrafo → Especial → Francesa) e interlineado doble.</span>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="cerrarBiblio()">Cerrar</button>
+      <button class="btn-ghost" onclick="descargarBiblio()">⬇️ Descargar .txt</button>
+      <button class="btn-primary" id="btn-copiar-biblio" onclick="copiarBiblio()">📋 Copiar todo</button>
     </div>
   </div>
 </div>
@@ -2821,6 +2842,8 @@ function renderHistorial() {
   window._hist = hist;
   const clearBtn = document.getElementById('hist-clear-btn');
   if (clearBtn) clearBtn.style.display = hist.length ? 'block' : 'none';
+  const exportBtn = document.getElementById('hist-export-btn');
+  if (exportBtn) exportBtn.style.display = hist.length ? 'inline-flex' : 'none';
   if (!hist.length) {
     el.innerHTML = `<div style="text-align:center;padding:2.5rem 0 1.5rem">
       <svg width="64" height="76" viewBox="0 0 64 76" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-bottom:14px;opacity:.7">
@@ -2880,6 +2903,71 @@ function limpiarHistorial() {
   try { localStorage.removeItem('apa7_historial'); } catch(e) {}
   renderHistorial();
 }
+
+/* ─── EXPORTAR BIBLIOGRAFÍA ─── */
+// Devuelve las referencias únicas del historial, ordenadas alfabéticamente
+// (APA 7 ordena por apellido del primer autor, con el que empieza la referencia).
+function getBibliografia() {
+  let hist = [];
+  try { hist = JSON.parse(localStorage.getItem('apa7_historial') || '[]'); } catch(e) {}
+  const vistas = new Set();
+  const refs = [];
+  hist.forEach(h => {
+    const r = (h.referencia || '').trim();
+    if (!r) return;
+    const clave = r.toLowerCase().replace(/\s+/g, ' ');
+    if (vistas.has(clave)) return;
+    vistas.add(clave);
+    refs.push(r);
+  });
+  refs.sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base' }));
+  return refs;
+}
+
+function exportarBibliografia() {
+  const refs = getBibliografia();
+  if (!refs.length) { alert('Aún no hay referencias guardadas.'); return; }
+  window._biblio = refs;
+  const n = refs.length;
+  document.getElementById('biblio-sub').textContent =
+    `${n} ${n === 1 ? 'referencia' : 'referencias'} · sin duplicados y ordenadas alfabéticamente según APA 7`;
+  document.getElementById('biblio-list').innerHTML = refs.map(r =>
+    `<p style="font-family:Georgia,serif;font-size:13px;line-height:1.7;color:var(--text);margin:0 0 12px;padding-left:1.27cm;text-indent:-1.27cm">${r}</p>`
+  ).join('');
+  document.getElementById('biblio-modal').classList.add('open');
+}
+
+function cerrarBiblio() {
+  document.getElementById('biblio-modal').classList.remove('open');
+}
+
+function copiarBiblio() {
+  const texto = (window._biblio || []).join('\n\n');
+  const btn = document.getElementById('btn-copiar-biblio');
+  navigator.clipboard.writeText(texto).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = '✓ Copiado';
+    setTimeout(() => { btn.textContent = orig; }, 2000);
+  });
+}
+
+function descargarBiblio() {
+  const refs = window._biblio || [];
+  if (!refs.length) return;
+  const texto = 'Referencias\n\n' + refs.join('\n\n') + '\n';
+  const blob = new Blob([texto], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Referencias_APA7_${new Date().toISOString().slice(0, 10)}.txt`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// Cerrar al pulsar fuera del recuadro
+document.getElementById('biblio-modal').addEventListener('click', function(e) {
+  if (e.target === this) cerrarBiblio();
+});
 
 /* ─── CASPE GUÍAS ─── */
 const CASPE_GUIAS = {
