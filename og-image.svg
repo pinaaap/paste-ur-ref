@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200" width="1200" height="1200">
+  <rect width="1200" height="1200" fill="#1A1A2E"/>
+  <rect x="90" y="90" width="1020" height="1020" rx="40" fill="#13131F"/>
+
+  <!-- Badge -->
+  <g transform="translate(150,200)">
+    <rect width="300" height="60" rx="30" fill="rgba(232,197,71,0.15)"/>
+    <circle cx="34" cy="30" r="8" fill="#E8C547"/>
+    <text x="60" y="40" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="700" fill="#E8C547" letter-spacing="1.5">APA 7ª EDICIÓN</text>
+  </g>
+
+  <!-- Title -->
+  <text x="150" y="450" font-family="Arial, Helvetica, sans-serif" font-size="115" font-weight="800" fill="#FAFAF8">Tu <tspan fill="#E8C547">referee</tspan></text>
+  <text x="150" y="580" font-family="Arial, Helvetica, sans-serif" font-size="115" font-weight="800" fill="#FAFAF8">para citas</text>
+  <text x="150" y="710" font-family="Arial, Helvetica, sans-serif" font-size="115" font-weight="800" fill="#FAFAF8">en APA</text>
+
+  <!-- Subtitle lines -->
+  <text x="152" y="810" font-family="Arial, Helvetica, sans-serif" font-size="36" font-weight="400" fill="#9898BB">Citas APA 7 · Parafraseo sin plagio</text>
+  <text x="152" y="862" font-family="Arial, Helvetica, sans-serif" font-size="36" font-weight="400" fill="#9898BB">Guías CASPe de lectura crítica</text>
+
+  <!-- Divider -->
+  <line x1="150" y1="960" x2="1050" y2="960" stroke="rgba(255,255,255,0.12)" stroke-width="2"/>
+
+  <!-- Brand row -->
+  <text x="150" y="1030" font-family="Georgia, serif" font-size="44" font-weight="700" fill="#FAFAF8">Paste ur ref<tspan fill="#E8C547">.</tspan></text>
+  <text x="1050" y="1028" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="600" fill="#6262A0" text-anchor="end">pasteurref.com</text>
+</svg>
