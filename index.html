@@ -2382,6 +2382,7 @@ REGLA CRÍTICA para "ejemplo_integracion" — NO repitas el autor ni el año dos
 - Si NO mencionas el autor en la frase, entonces el paréntesis de cierre lleva autor, año y página juntos: "(García, 2021, p. 45)".
 - En APA el apellido va sin la inicial del nombre dentro del texto: escribe "García (2021)", no "García J. (2021)".
 - En una cita en bloque (40+ palabras) el punto final va ANTES del paréntesis de cierre.
+- Si la cita es en BLOQUE (40+ palabras), "ejemplo_integracion" debe llevar la frase introductoria y el bloque separados por un salto de línea (\\n): primero la frase que presenta la cita terminada en dos puntos, luego \\n, y después el texto citado con su paréntesis final. No uses comillas en el bloque.
 
 JSON exacto requerido:
 {"referencia_completa":"referencia APA 7 para lista de referencias","cita_en_texto":"cita corta para dentro del párrafo","ejemplo_integracion":"oración completa mostrando el fragmento integrado al texto con formato APA 7 correcto, sin duplicar autor/año","explicacion":[{"fragmento":"parte de la referencia","regla":"regla APA que aplica"}]}`
@@ -2505,6 +2506,59 @@ function renderPanelValidacion(checks) {
     </div>`;
 }
 
+/* ─── EJEMPLO DE INTEGRACIÓN ─── */
+// Separa la frase introductoria del bloque citado. En cita en bloque (40+
+// palabras) APA exige párrafo aparte, así que devolvemos [intro, bloque].
+function partirEjemplo(ej, tipoCita) {
+  const limpio = (ej || '').trim();
+  if (tipoCita !== 'textual_larga' || !limpio) return [limpio];
+  if (limpio.includes('\n')) {
+    const partes = limpio.split('\n').map(s => s.trim()).filter(Boolean);
+    if (partes.length >= 2) return [partes[0], partes.slice(1).join(' ')];
+  }
+  // Si el modelo no separó, cortamos tras los dos puntos de la introducción
+  const i = limpio.indexOf(': ');
+  if (i > 0) return [limpio.slice(0, i + 1).trim(), limpio.slice(i + 2).trim()];
+  return [limpio];
+}
+
+function renderEjemplo(partes) {
+  window._ejemploPartes = partes;
+  const base = 'font-family:Georgia,serif;font-size:14px;line-height:2;color:var(--text-mid);margin:0';
+  if (partes.length < 2) {
+    return `<p style="${base}">${partes[0] || ''}</p>`;
+  }
+  return `<p style="${base}">${partes[0]}</p>
+          <p style="${base};margin-top:10px;padding-left:1.27cm">${partes[1]}</p>`;
+}
+
+// Copia el ejemplo con formato APA listo para Word: Arial 12, interlineado
+// doble y, si es cita en bloque, en párrafo aparte con sangría de 1.27 cm.
+async function copiarEjemplo(btn) {
+  const partes = window._ejemploPartes || [];
+  if (!partes.length) return;
+  const base = 'font-family:Arial,sans-serif;font-size:12pt;line-height:2;margin:0 0 12pt 0;';
+  const html = partes.length >= 2
+    ? `<p style="${base}">${partes[0]}</p><p style="${base}margin-left:1.27cm;">${partes[1]}</p>`
+    : `<p style="${base}">${partes[0]}</p>`;
+  const texto = partes.join('\n');
+  const ok = () => {
+    const orig = btn.innerHTML;
+    btn.textContent = '✓ Copiado';
+    setTimeout(() => { btn.innerHTML = orig; }, 2000);
+  };
+  try {
+    await navigator.clipboard.write([new ClipboardItem({
+      'text/html': new Blob([html], { type: 'text/html' }),
+      'text/plain': new Blob([texto], { type: 'text/plain' })
+    })]);
+    ok();
+  } catch (e) {
+    // Navegadores sin ClipboardItem: al menos copiamos texto limpio
+    try { await navigator.clipboard.writeText(texto); ok(); } catch (e2) {}
+  }
+}
+
 function renderResultado(r) {
   document.getElementById('load3').style.display='none';
   const panelValidacion = renderPanelValidacion(validarCita(r));
@@ -2526,7 +2580,11 @@ function renderResultado(r) {
     ${r.ejemplo_integracion?`
     <div style="margin-bottom:1.25rem">
       <p class="slabel">Ejemplo — cómo integrarlo a tu texto</p>
-      <div class="cite-box"><p style="font-family:Georgia,serif;font-size:14px;line-height:1.8;color:var(--text-mid)">${r.ejemplo_integracion}</p></div>
+      <div class="cite-box">
+        ${renderEjemplo(partirEjemplo(r.ejemplo_integracion, st.tipoCita))}
+        <button class="btn-copy" onclick="copiarEjemplo(this)" style="margin-top:12px">📋 Copiar para Word</button>
+        <p style="font-size:11px;color:var(--text-muted);margin-top:8px;line-height:1.5">Se copia limpio en <strong>Arial 12</strong>, con interlineado doble${st.tipoCita==='textual_larga'?' y la sangría del bloque ya aplicada':''} — listo para pegar.</p>
+      </div>
     </div>`:''}
     ${r.explicacion&&r.explicacion.length?`
     <div>
