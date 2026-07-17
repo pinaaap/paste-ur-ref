@@ -1203,6 +1203,10 @@
             <span style="flex-shrink:0;font-size:16px">✅</span>
             <div id="lookup-found-text" style="line-height:1.6"></div>
           </div>
+          <div id="lookup-warn" style="display:none;background:var(--amber-bg);border:1.5px solid var(--amber-border);border-radius:var(--radius);padding:10px 14px;font-size:13px;margin-top:8px;align-items:flex-start;gap:8px">
+            <span style="flex-shrink:0;font-size:16px">⚠️</span>
+            <div style="line-height:1.6;color:var(--text)"><strong>No pude identificar el autor.</strong> Búscalo en el artículo — suele estar bajo el título o al final del texto — y escríbelo abajo como «Apellido, N.». Sin autor la cita no es válida en APA.</div>
+          </div>
         </div>
       </div>
 
@@ -2197,9 +2201,11 @@ async function buscarDatos() {
 
     fillFromMetadata(meta);
 
-    const filled = [meta.autor, meta.anio, meta.titulo].filter(Boolean);
+    const filled = [meta.autor && meta.autor.replace(/\n/g, ' · '), meta.anio, meta.titulo].filter(Boolean);
     document.getElementById('lookup-found-text').innerHTML =
       `Datos encontrados: <strong>${filled.join(' · ')}</strong>${meta.pagina ? ` · ${/[-–—]/.test(meta.pagina) ? 'pp.' : 'p.'} ${meta.pagina}` : ''}`;
+    // Sin autor no hay cita APA válida: avisamos en vez de inventarlo
+    document.getElementById('lookup-warn').style.display = meta.autor ? 'none' : 'flex';
     foundEl.style.display = 'block';
 
   } catch(e) {
@@ -2263,25 +2269,32 @@ async function fetchFromURL(url) {
   const doiInUrl = extractDOI(decodeURIComponent(url));
   if (doiInUrl) return fetchFromCrossRef(doiInUrl);
 
-  // 2. Obtiene el contenido de la página via Jina Reader (sin API key, resuelve CORS)
-  let pageContent = '';
+  // 2. Obtiene el HTML de la página via Jina Reader (resuelve CORS). Pedimos HTML
+  //    —no markdown— porque las etiquetas <meta citation_*> solo viajan en el HTML.
+  let pageHtml = '';
   try {
     const jinaRes = await fetch('https://r.jina.ai/' + url, {
-      headers: { 'Accept': 'text/markdown, text/plain, */*', 'X-Return-Format': 'markdown' }
+      headers: { 'X-Return-Format': 'html' }
     });
-    if (jinaRes.ok) pageContent = await jinaRes.text();
+    if (jinaRes.ok) pageHtml = await jinaRes.text();
   } catch(e) { /* Jina falló, continuamos */ }
 
-  // 3. Busca DOI dentro del contenido de la página
-  if (pageContent) {
-    const doiInPage = extractDOI(pageContent);
-    if (doiInPage) return fetchFromCrossRef(doiInPage);
-  }
+  if (pageHtml) {
+    const meta = parseCitationMeta(pageHtml, url);
 
-  // 4. Parseo manual de metadatos comunes del contenido (sin API key)
-  if (pageContent) {
-    const parsed = parseMetaFromContent(pageContent, url);
-    if (parsed.titulo || parsed.autor) return parsed;
+    // 3. Si la página declara su DOI, CrossRef da los datos más completos
+    if (meta && meta.doi) {
+      try { return await fetchFromCrossRef(meta.doi); } catch(e) { /* seguimos con las meta */ }
+    }
+
+    // 4. DOI suelto en el HTML
+    const doiInPage = extractDOI(pageHtml);
+    if (doiInPage) {
+      try { return await fetchFromCrossRef(doiInPage); } catch(e) { /* seguimos con las meta */ }
+    }
+
+    // 5. Metadatos declarados por la propia página (citation_*): fiables
+    if (meta && (meta.titulo || meta.autor)) return meta;
   }
 
   // 5. Fallback: usa Claude (proxy del servidor o key personal) para identificar la fuente
@@ -2296,33 +2309,60 @@ Si no puedes identificar un campo con certeza, déjalo vacío (""). No inventes 
   return json;
 }
 
-function parseMetaFromContent(content, url) {
-  // Título: primer encabezado H1 del markdown
-  let titulo = '';
-  const h1 = content.match(/^#\s+(.+)/m);
-  if (h1) titulo = h1[1].trim();
+// Normaliza un nombre al formato APA "Apellido, N."
+function formatAutorAPA(nombre) {
+  const n = (nombre || '').trim().replace(/\s+/g, ' ');
+  if (!n) return '';
+  const inicial = p => (p && p[0] ? p[0].toUpperCase() + '.' : '');
+  if (n.includes(',')) {
+    // "Gómez-Luque, A." o "Gómez-Luque, Antonio"
+    const partes = n.split(',');
+    const apellido = partes[0].trim();
+    const iniciales = partes.slice(1).join(' ').trim().split(/\s+/).filter(Boolean).map(inicial).join(' ');
+    return iniciales ? `${apellido}, ${iniciales}` : apellido;
+  }
+  // "Antonio Gómez-Luque" o "A. Gómez-Luque"
+  const partes = n.split(' ').filter(Boolean);
+  if (partes.length === 1) return partes[0];
+  const apellido = partes.pop();
+  const iniciales = partes.map(inicial).join(' ');
+  return iniciales ? `${apellido}, ${iniciales}` : apellido;
+}
 
-  // Autores: busca patrones comunes en contenido académico
-  let autor = '';
-  const autorMatch = content.match(/(?:Authors?|Autou?r(?:es)?|By)[:\s]+([A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:[,\s]+(?:and|y|&)\s+)?[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)*)/i);
-  if (autorMatch) autor = autorMatch[1].trim();
+// Lee las etiquetas <meta name="citation_*"> que publican SciELO, PubMed y la
+// mayoría de revistas académicas. Es la vía fiable: nada de adivinar en la prosa.
+function parseCitationMeta(html, url) {
+  let doc;
+  try { doc = new DOMParser().parseFromString(html, 'text/html'); } catch(e) { return null; }
+  const metas = Array.from(doc.querySelectorAll('meta[name]')).map(m => ({
+    name: (m.getAttribute('name') || '').toLowerCase(),
+    content: (m.getAttribute('content') || '').trim()
+  }));
+  const getAll = n => metas.filter(m => m.name === n && m.content).map(m => m.content);
+  const get = n => getAll(n)[0] || '';
 
-  // Año: primeros 4 dígitos de año plausible (2000-2099)
-  let anio = '';
-  const anioMatch = content.match(/\b(20[0-2]\d)\b/);
-  if (anioMatch) anio = anioMatch[1];
+  let autores = getAll('citation_author');
+  if (!autores.length) autores = getAll('dc.creator');
+  if (!autores.length && get('author')) autores = [get('author')];
+  const autor = autores.map(formatAutorAPA).filter(Boolean).join('\n');
 
-  // Revista: busca patrones de revista
-  let revista = '';
-  const revMatch = content.match(/(?:Journal|Revista|Published in)[:\s]+([^\n|•]+)/i);
-  if (revMatch) revista = revMatch[1].trim().replace(/[.,]+$/, '');
+  const titulo = get('citation_title') || get('dc.title') || '';
+  const fecha = get('citation_date') || get('citation_publication_date') || get('dc.date') || '';
+  const anioM = fecha.match(/\b(1[89]\d{2}|20\d{2})\b/);
+  const fp = get('citation_firstpage'), lp = get('citation_lastpage');
 
-  // Páginas
-  let pagina = '';
-  const pageMatch = content.match(/\bpp?[.\s]+(\d+[-–]\d+)/i);
-  if (pageMatch) pagina = pageMatch[1];
-
-  return { titulo, autor, anio, revista, pagina, editorial: '', url };
+  return {
+    autor,
+    anio: anioM ? anioM[1] : '',
+    titulo,
+    revista: get('citation_journal_title') || '',
+    volumen: get('citation_volume') || '',
+    numero: get('citation_issue') || '',
+    pagina: fp && lp ? `${fp}-${lp}` : (fp || ''),
+    doi: get('citation_doi') || '',
+    editorial: get('citation_publisher') || '',
+    url
+  };
 }
 
 function fillFromMetadata(meta) {
