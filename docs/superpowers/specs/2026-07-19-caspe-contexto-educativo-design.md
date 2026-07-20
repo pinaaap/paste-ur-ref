@@ -61,7 +61,7 @@ La ficha muestra: etiqueta "Sobre esta plantilla", el texto `cuando`, una línea
   nombre del grupo; al abrir muestra la lista de definiciones (`<dl>` o filas).
 - Estilo consistente con las tarjetas existentes; sin dependencias nuevas.
 
-### Contenido — 4 grupos
+### Contenido — 3 grupos
 
 **Diseño y sesgos**
 - **Aleatorización** — asignar al azar a cada participante a un grupo, para que
@@ -70,7 +70,8 @@ La ficha muestra: etiqueta "Sobre esta plantilla", el texto `cuando`, una línea
   antemano a qué grupo irá el siguiente participante.
 - **Cegamiento** — que pacientes, clínicos o evaluadores no sepan qué
   tratamiento recibe cada quién, para evitar sesgos en la medición.
-- **Sesgo** — error sistemático que desvía los resultados en una dirección.
+- **Sesgo** — error sistemático o una desviación constante en los datos que hace
+  que los resultados no representen la realidad.
 - **Factor de confusión** — variable asociada a la vez a la exposición y al
   desenlace que distorsiona la asociación observada.
 - **Análisis por intención de tratar (ITT)** — analizar a los participantes en
@@ -102,16 +103,6 @@ La ficha muestra: etiqueta "Sobre esta plantilla", el texto `cuando`, una línea
   resultado la probabilidad de enfermedad; combina sensibilidad y especificidad.
 - **Patrón de referencia (gold standard)** — mejor método disponible para
   confirmar el diagnóstico, con el que se compara la prueba.
-
-**Investigación cualitativa**
-- **Saturación de datos** — punto en que nuevas entrevistas ya no aportan
-  información nueva.
-- **Triangulación** — contrastar varias fuentes, métodos o investigadores para
-  reforzar la credibilidad.
-- **Reflexividad** — reflexión del investigador sobre cómo su papel influye en
-  los datos.
-- **Transferibilidad** — grado en que los hallazgos pueden aplicarse a otros
-  contextos.
 
 ## Verificación
 
